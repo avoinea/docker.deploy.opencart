@@ -1,0 +1,66 @@
+version: '2'
+services:
+  redirect:
+    image: eeacms/apache:2.4-2.1-alpine
+    restart: unless-stopped
+    ports:
+    - "80:80"
+    environment:
+      TZ: "${TZ}"
+      APACHE_CONFIG: |-
+        <VirtualHost *:80>
+          ServerName ${HOST}
+          RewriteEngine On
+          RewriteRule ^(.*)$$ https://${HOST}$$1 [R=permanent,L]
+        </VirtualHost>
+  opencart:
+    image: 'bitnami/opencart:3.0.2-0'
+    restart: unless-stopped
+    ports:
+    - "443:443"
+    environment:
+      TZ: "${TZ}"
+      OPENCART_USERNAME: "${USER}"
+      OPENCART_PASSWORD: "${PASSWORD}"
+      OPENCART_EMAIL: "${EMAIL}"
+      OPENCART_HOST: "${HOST}"
+      MARIADB_HOST: "mariadb"
+      MARIADB_PORT_NUMBER: "3306"
+      OPENCART_DATABASE_USER: "${DB_USER}"
+      OPENCART_DATABASE_NAME: "${DB_NAME}"
+      OPENCART_DATABASE_PASSWORD: "${DB_PASS}"
+    volumes:
+      - 'opencart:/bitnami'
+      - 'local_certs:/opt/bitnami/apache/certs:ro'
+    depends_on:
+      - mariadb
+      - fixcerts
+  mariadb:
+    image: 'bitnami/mariadb:10.1.37'
+    restart: unless-stopped
+    environment:
+      TZ: "${TZ}"
+      MARIADB_USER: "${DB_USER}"
+      MARIADB_DATABASE: "${DB_NAME}"
+      MARIADB_PASSWORD: "${DB_PASS}"
+      MARIADB_ROOT_PASSWORD: "${DB_PASS}"
+    volumes:
+      - 'mariadb:/bitnami'
+  fixcerts:
+    image: alpine
+    volumes:
+     - 'certs:/certs'
+     - 'local_certs:/local_certs'
+    tty: true
+    stdin_open: true
+    command: sh -c "cp /certs/archive/${HOST}/cert1.pem /local_certs/server.crt; cp /certs/archive/${HOST}/privkey1.pem /local_certs/server.key"
+
+volumes:
+  certs:
+    external: true
+  local_certs:
+    driver: local
+  mariadb:
+    driver: local
+  opencart:
+    driver: local
