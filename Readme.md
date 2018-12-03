@@ -32,7 +32,7 @@
 
 ## Customize your store
 
-* https://www.mystore.com/admin
+    https://www.mystore.com/admin
 
 ## Renew SSL certificates
 
