@@ -1,5 +1,7 @@
 # OpenCart Docker Orchestration
 
+[OpenCart](https://www.opencart.com/) - The best FREE and open-source eCommerce platform
+
 ## Install
 
     $ git clone https://github.com/avoinea/docker.deploy.opencart mystore.com
